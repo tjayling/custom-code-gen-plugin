@@ -30,7 +30,7 @@ public class CreateMicrotypeAction extends AnAction {
     var noClassName = "No" + className;
 
     var typeContent = String.format("%n%nimport lombok.Value;%nimport lombok.experimental.NonFinal;%n%n@Value%n@NonFinal%npublic class %s {%n\t%s value;%n%n\tpublic %s(%s value) {%n\t\tthis.value = value;%n\t}%n%n\tpublic boolean isPresent() {%n\t\treturn true;%n\t}%n}%n", className, classType, className, classType);
-    var noTypeContent = String.format("%n%npublic class %s extends %s {%n\tprivate final %s INSTANCE = new %s();%n%n\tprivate %s() {%n\t\tsuper();%n\t}%n%n\tpublic %s create() {%n\t\treturn INSTANCE;%n\t}%n%n\tpublic boolean isPresent() {%n\t\treturn false;%n\t}%n}%n", noClassName, className, noClassName, noClassName, noClassName, noClassName);
+    var noTypeContent = String.format("%n%npublic class %s extends %s {%n\tprivate final %s INSTANCE = new %s();%n%n\tprivate %s() {%n\t\tsuper();%n\t}%n%n\tpublic %s create() {%n\t\treturn INSTANCE;%n\t}%n%n\t@Override%n\tpublic boolean isPresent() {%n\t\treturn false;%n\t}%n}%n", noClassName, className, noClassName, noClassName, noClassName, noClassName);
 
     var typeFile = FileUtils.createFile(project, className, typeContent);
     var noTypeFile = FileUtils.createFile(project, noClassName, noTypeContent);

@@ -8,13 +8,13 @@
     <name>Custom Code Gen</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-    <vendor email="tjayling@yahoo.co.uk" url="https://www.yourcompany.com">Tom</vendor>
+    <vendor email="tjayling@yahoo.co.uk" url="https://www.tjayling.space">Tom</vendor>
 
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description>
-        Some useful code generators that for basic package structure and microtypes
+        Some useful code generators for basic package structure and microtypes. Has the potential to save you hours of time.
     </description>
 
     <!-- Product and plugin compatibility requirements.
@@ -27,11 +27,11 @@
 
     </extensions>
     <actions>
-        <action id="GenerateDomain" text="Generate Domain" class="org.tom.customcodegen.actions.GenerateDomainAction" description="Generates a project domain structure" icon="AllIcons.Nodes.Package">
-            <add-to-group group-id="NewGroup" anchor="first"/>
+        <action id="generate-domain" text="Domain" class="org.tom.customcodegen.actions.GenerateDomainAction" description="Generates a project domain structure" icon="AllIcons.Nodes.CopyOfFolder">
+            <add-to-group group-id="NewGroup" relative-to-action="NewFile" anchor="before"/>
         </action>
-        <action id="create-microtype" text="Microtype" class="org.tom.customcodegen.actions.CreateMicrotypeAction" description="Creates a microtype template"  icon="AllIcons.Nodes.AbstractClass">
-            <add-to-group group-id="NewGroup" anchor="first"/>
+        <action id="create-microtype" text="Microtype" class="org.tom.customcodegen.actions.CreateMicrotypeAction" description="Creates a microtype template"  icon="AllIcons.Nodes.Method">
+            <add-to-group group-id="NewGroup" relative-to-action="NewFile" anchor="before"/>
         </action>
     </actions>
 </idea-plugin>

@@ -14,12 +14,14 @@
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description>
-        Some useful code generators for basic package structure and microtypes.
-        Has the potential to save you hours of time.
-
-        Adds two options to the new file menu:
-        - Domain: Generates a basic package structure for a project, including a controller, service, repository and domain package structure along with the corresponding classes, all wired together for you.
-        - Microtype: Generates a basic microtype template. You give your type a name, and the type that it will be encapsulating, and an Object and NoObject are generated with inheritance and isPresent methods.
+        <![CDATA[
+            <h3>Some useful code generators for basic package structure and microtypes.</h3>
+            <h4>Adds two options to the new file menu:</h4>
+            <ul>
+            <li>Domain: Generates a basic package structure for a project, including a controller, service, repository and domain package structure along with the corresponding classes, all wired together for you.</li>
+            <li>Microtype: Generates a basic microtype template. You give your type a name, and the type that it will be encapsulating, and an Object and NoObject are generated with inheritance and isPresent methods.</li>
+            </ul>
+        ]]>
     </description>
 
     <!-- Product and plugin compatibility requirements.

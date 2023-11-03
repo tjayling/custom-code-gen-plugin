@@ -29,8 +29,8 @@ public class CreateMicrotypeAction extends AnAction {
 
     var noClassName = "No" + className;
 
-    var typeContent = String.format("%n%nimport lombok.Value;%nimport lombok.experimental.NonFinal;%n%n@Value%n@NonFinal%npublic class %s {%n\t%s value;%n%n\tpublic %s(%s value) {%n\t\tthis.value = value;%n\t}%n%n\tpublic boolean isPresent() {%n\t\treturn true;%n\t}%n}%n", className, classType, className, classType);
-    var noTypeContent = String.format("%n%npublic class %s extends %s {%n\tprivate final %s INSTANCE = new %s();%n%n\tprivate %s() {%n\t\tsuper();%n\t}%n%n\tpublic %s create() {%n\t\treturn INSTANCE;%n\t}%n%n\t@Override%n\tpublic boolean isPresent() {%n\t\treturn false;%n\t}%n}%n", noClassName, className, noClassName, noClassName, noClassName, noClassName);
+    var typeContent = String.format("%n%nimport lombok.Value;%nimport lombok.experimental.NonFinal;%n%n@Value%n@NonFinal%npublic class %s {%n  %s value;%n%n  public %s(%s value) {%n    this.value = value;%n  }%n%n  public boolean isPresent() {%n    return true;%n  }%n}%n", className, classType, className, classType);
+    var noTypeContent = String.format("%n%npublic class %s extends %s {%n  private static final %s INSTANCE = new %s();%n%n  private %s() {%n    super();%n  }%n%n  public static %s create() {%n    return INSTANCE;%n  }%n%n  @Override%n  public boolean isPresent() {%n    return false;%n  }%n}%n", noClassName, className, noClassName, noClassName, noClassName, noClassName);
 
     var typeFile = FileUtils.createFile(project, className, typeContent);
     var noTypeFile = FileUtils.createFile(project, noClassName, noTypeContent);
@@ -38,7 +38,7 @@ public class CreateMicrotypeAction extends AnAction {
     ApplicationManager.getApplication().invokeLater(() -> WriteCommandAction.runWriteCommandAction(project, () -> {
       selectedDirectory.add(typeFile);
       var createdFile = selectedDirectory.add(noTypeFile);
-      FileUtils.openFile(project, (PsiFile) createdFile, 6, 14);
+      FileUtils.openFile(project, (PsiFile) createdFile, 6, 10);
     }));
   }
 }

@@ -47,7 +47,7 @@ public class GenerateDomainAction extends AnAction {
   private void createController(Project project, PsiDirectory directory, String className) {
     var relativePackage = PackageUtils.getRelativePackage(directory);
     var classNameLower = StringUtils.lowercaseFirstLetter(className);
-    var fileContent = String.format("%n%nimport %s.service.%sService;%nimport lombok.extern.slf4j.Slf4j;%nimport org.springframework.web.bind.annotation.RequestMapping;%nimport org.springframework.web.bind.annotation.RestController;%n%n@Slf4j%n@RestController%n@RequestMapping(\"/api/\")%npublic class %sController {%n\tprivate final %sService %sService;%n%n\tpublic %sController(%sService %sService) {%n\t\tthis.%sService = %sService;%n\t}%n%n\t%n}", relativePackage, className, className, className, classNameLower, className, className, classNameLower, classNameLower, classNameLower);
+    var fileContent = String.format("%n%nimport %s.service.%sService;%nimport lombok.extern.slf4j.Slf4j;%nimport org.springframework.web.bind.annotation.RequestMapping;%nimport org.springframework.web.bind.annotation.RestController;%n%n@Slf4j%n@RestController%n@RequestMapping(\"/api/\")%npublic class %sController {%n  private final %sService %sService;%n%n  public %sController(%sService %sService) {%n    this.%sService = %sService;%n  }%n%n  %n}", relativePackage, className, className, className, classNameLower, className, className, classNameLower, classNameLower, classNameLower);
 
     className += "Controller";
 
@@ -65,7 +65,7 @@ public class GenerateDomainAction extends AnAction {
     var relativePackage = PackageUtils.getRelativePackage(directory);
     var classNameLower = StringUtils.lowercaseFirstLetter(className);
 
-    var serviceContent = String.format("%n%nimport %s.service.%sRepository;%nimport lombok.extern.slf4j.Slf4j;%nimport org.springframework.stereotype.Service;%n%n@Slf4j%n@Service%npublic class %sService {%n\tprivate final %sRepository %sRepository;%n%n\tpublic %sService(%sRepository %sRepository) {%n\t\tthis.%sRepository = %sRepository;%n\t}%n}", relativePackage, className, className, className, classNameLower, className, className, classNameLower, classNameLower, classNameLower);
+    var serviceContent = String.format("%n%nimport %s.service.%sRepository;%nimport lombok.extern.slf4j.Slf4j;%nimport org.springframework.stereotype.Service;%n%n@Slf4j%n@Service%npublic class %sService {%n  private final %sRepository %sRepository;%n%n  public %sService(%sRepository %sRepository) {%n    this.%sRepository = %sRepository;%n  }%n}", relativePackage, className, className, className, classNameLower, className, className, classNameLower, classNameLower, classNameLower);
     var repositoryContent = String.format("package %s.service;%n%npublic interface %sRepository {%n%n}", relativePackage, className);
 
     String serviceName = className + "Service";

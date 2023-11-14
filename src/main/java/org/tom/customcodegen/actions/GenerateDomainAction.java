@@ -4,15 +4,12 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.PsiDirectory;
-import com.intellij.psi.PsiFile;
 import io.netty.util.internal.StringUtil;
 import org.jetbrains.annotations.NotNull;
-import org.tom.customcodegen.utils.FileUtils;
+import org.tom.customcodegen.builder.ClassBuilder;
 import org.tom.customcodegen.utils.PackageUtils;
 import org.tom.customcodegen.utils.StringUtils;
 
@@ -21,7 +18,7 @@ public class GenerateDomainAction extends AnAction {
   public void actionPerformed(AnActionEvent e) {
     var project = e.getRequiredData(CommonDataKeys.PROJECT);
     var selectedDirectory = (PsiDirectory) e.getRequiredData(CommonDataKeys.PSI_ELEMENT);
-    var className = Messages.showInputDialog("Enter the class name for the domain: ", "Domain Class Name", Messages.getQuestionIcon());
+    var className = Messages.showInputDialog("Enter the domain name: ", "Domain Name", Messages.getQuestionIcon());
 
     if (StringUtil.isNullOrEmpty(className)) {
       return;
@@ -30,12 +27,11 @@ public class GenerateDomainAction extends AnAction {
     className = StringUtils.capitaliseFirstLetter(className);
 
     String finalClassName = className;
-    ApplicationManager.getApplication().invokeLater(() -> WriteCommandAction.runWriteCommandAction(project, () -> {
-      createController(project, selectedDirectory, finalClassName);
-      createService(project, selectedDirectory, finalClassName);
-      createRepository(project, selectedDirectory, finalClassName);
-      createDomain(project, selectedDirectory, finalClassName);
-    }));
+    createController(project, selectedDirectory, finalClassName);
+    createService(project, selectedDirectory, finalClassName);
+    createRepositoryInterface(project, selectedDirectory, finalClassName);
+    createRepository(project, selectedDirectory, finalClassName);
+    createDomain(project, selectedDirectory, finalClassName);
   }
 
   @Override
@@ -45,61 +41,98 @@ public class GenerateDomainAction extends AnAction {
   }
 
   private void createController(Project project, PsiDirectory directory, String className) {
+    var controllerBuilder = new ClassBuilder(project);
+
     var relativePackage = PackageUtils.getRelativePackage(directory);
     var classNameLower = StringUtils.lowercaseFirstLetter(className);
-    var fileContent = String.format("%n%nimport %s.service.%sService;%nimport lombok.extern.slf4j.Slf4j;%nimport org.springframework.web.bind.annotation.RequestMapping;%nimport org.springframework.web.bind.annotation.RestController;%n%n@Slf4j%n@RestController%n@RequestMapping(\"/api/\")%npublic class %sController {%n  private final %sService %sService;%n%n  public %sController(%sService %sService) {%n    this.%sService = %sService;%n  }%n%n  %n}", relativePackage, className, className, className, classNameLower, className, className, classNameLower, classNameLower, classNameLower);
 
-    className += "Controller";
+    controllerBuilder.startOfFile();
+    controllerBuilder.imports("%s.service.%sService;", relativePackage, className);
+    controllerBuilder.slf4jImport();
+    controllerBuilder.imports("org.springframework.web.bind.annotation.RequestMapping");
+    controllerBuilder.imports("org.springframework.web.bind.annotation.RestController");
+    controllerBuilder.blankLine();
+    controllerBuilder.slf4jAnnotation();
+    controllerBuilder.newLine("@RestController");
+    controllerBuilder.newLine("@RequestMapping(\"/api/\")");
+    controllerBuilder.defineClass(className + "Controller");
+    controllerBuilder.newLine("private final %sService %sService;", 1, className, classNameLower);
+    controllerBuilder.blankLine();
+    controllerBuilder.newLine("public %sController(%sService %sService) {", 1, className, className, classNameLower);
+    controllerBuilder.newLine("this.%sService = %sService;", 2, classNameLower, classNameLower);
+    controllerBuilder.closeCurly(1);
+    controllerBuilder.closeCurly();
 
-    var file = FileUtils.createFile(project, className, fileContent);
-
-
-
-    var subDirectory = PackageUtils.getOrCreateSubdirectory(directory, "controller");
-
-    var createdFile = subDirectory.add(file);
-    FileUtils.openFile(project, (PsiFile) createdFile, 17, 6);
+    controllerBuilder.buildAndOpenFile(className + "Controller", directory, "controller", 10, 10);
   }
 
   private void createService(Project project, PsiDirectory directory, String className) {
-    var relativePackage = PackageUtils.getRelativePackage(directory);
     var classNameLower = StringUtils.lowercaseFirstLetter(className);
 
-    var serviceContent = String.format("%n%nimport %s.service.%sRepository;%nimport lombok.extern.slf4j.Slf4j;%nimport org.springframework.stereotype.Service;%n%n@Slf4j%n@Service%npublic class %sService {%n  private final %sRepository %sRepository;%n%n  public %sService(%sRepository %sRepository) {%n    this.%sRepository = %sRepository;%n  }%n}", relativePackage, className, className, className, classNameLower, className, className, classNameLower, classNameLower, classNameLower);
-    var repositoryContent = String.format("package %s.service;%n%npublic interface %sRepository {%n%n}", relativePackage, className);
+    var serviceName = className + "Service";
+    var serviceBuilder = new ClassBuilder(project);
 
-    String serviceName = className + "Service";
-    String repositoryName = className + "Repository";
+    serviceBuilder.startOfFile();
+    serviceBuilder.slf4jImport();
+    serviceBuilder.imports("org.springframework.stereotype.Service");
+    serviceBuilder.blankLine();
+    serviceBuilder.slf4jAnnotation();
+    serviceBuilder.newLine("@Service");
+    serviceBuilder.defineClass(serviceName);
+    serviceBuilder.newLine("private final %sRepository %sRepository;", 1, className, classNameLower);
+    serviceBuilder.blankLine();
+    serviceBuilder.newLine("public %sService(%sRepository %sRepository) {", 1, className, className, classNameLower);
+    serviceBuilder.newLine("this.%sRepository = %sRepository;", 2, classNameLower, classNameLower);
+    serviceBuilder.closeCurly(1);
+    serviceBuilder.closeCurly();
 
-    var serviceFile = FileUtils.createFile(project, serviceName, serviceContent);
-    var repositoryFile = FileUtils.createFile(project, repositoryName, repositoryContent);
+    serviceBuilder.build(serviceName, directory, "service");
+  }
 
-    var subDirectory = PackageUtils.getOrCreateSubdirectory(directory, "service");
+  private void createRepositoryInterface(Project project, PsiDirectory directory, String className) {
+    var repositoryName = className + "Repository";
+    var repositoryInterfaceBuilder = new ClassBuilder(project);
 
-    subDirectory.add(serviceFile);
-    subDirectory.add(repositoryFile);
+    repositoryInterfaceBuilder.startOfFile();
+    repositoryInterfaceBuilder.defineInterface(repositoryName);
+    repositoryInterfaceBuilder.blankLine();
+    repositoryInterfaceBuilder.closeCurly();
+
+    repositoryInterfaceBuilder.build(repositoryName, directory, "service");
   }
 
   private void createRepository(Project project, PsiDirectory directory, String className) {
+    var repositoryBuilder = new ClassBuilder(project);
+
     var relativePackage = PackageUtils.getRelativePackage(directory);
-    var fileContent = String.format("%n%nimport %s.service.%sRepository;%nimport lombok.extern.slf4j.Slf4j;%nimport org.springframework.stereotype.Repository;%n%n@Slf4j%n@Repository%npublic class %sRepositoryImpl implements %sRepository {%n%n}", relativePackage, className, className, className);
 
-    className += "RepositoryImpl";
+    repositoryBuilder.startOfFile();
+    repositoryBuilder.imports("%s.service.%sRepository;", relativePackage, className);
+    repositoryBuilder.slf4jImport();
+    repositoryBuilder.imports("org.springframework.stereotype.Repository");
+    repositoryBuilder.blankLine();
+    repositoryBuilder.slf4jAnnotation();
+    repositoryBuilder.newLine("@Repository");
+    repositoryBuilder.defineClassImplements(className + "RepositoryImpl", className + "Repository");
+    repositoryBuilder.blankLine();
+    repositoryBuilder.closeCurly();
 
-    var file = FileUtils.createFile(project, className, fileContent);
+    repositoryBuilder.build(className + "RepositoryImpl", directory, "repository");
 
-    var subDirectory = PackageUtils.getOrCreateSubdirectory(directory, "repository");
-    subDirectory.add(file);
   }
 
   private void createDomain(Project project, PsiDirectory directory, String className) {
-    var relativePackage = PackageUtils.getRelativePackage(directory);
-    var fileContent = String.format("package %s.model;%n%nimport lombok.Value;%n%n@Value%npublic class %s {%n%n}", relativePackage, className);
+    var domainBuilder = new ClassBuilder(project);
 
-    var file = FileUtils.createFile(project, className, fileContent);
+    domainBuilder.startOfFile();
+    domainBuilder.imports("lombok.Value");
+    domainBuilder.blankLine();
+    domainBuilder.newLine("@Value");
+    domainBuilder.defineClass(className);
+    domainBuilder.blankLine();
+    domainBuilder.closeCurly();
 
-    var subDirectory = PackageUtils.getOrCreateSubdirectory(directory, "domain");
-    subDirectory.add(file);
+    domainBuilder.build(className, directory, "domain");
   }
 
   @Override

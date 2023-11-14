@@ -21,4 +21,8 @@ public class FileUtils {
   public static void openFile(Project project, PsiFile createdFile, int line, int column) {
     FileEditorManager.getInstance(project).openTextEditor(new OpenFileDescriptor(project, createdFile.getVirtualFile(), line, column), true);
   }
+
+  public static void openFile(Project project, PsiFile createdFile) {
+    FileEditorManager.getInstance(project).openTextEditor(new OpenFileDescriptor(project, createdFile.getVirtualFile(), 0, 0), true);
+  }
 }

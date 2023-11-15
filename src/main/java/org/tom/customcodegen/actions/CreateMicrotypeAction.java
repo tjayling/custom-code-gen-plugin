@@ -58,9 +58,11 @@ public class CreateMicrotypeAction extends AnAction {
     var noClassName = "No" + className;
 
     microtypeBuilder.startOfFile();
+    microtypeBuilder.imports("lombok.EqualsAndHashCode");
     microtypeBuilder.imports("lombok.Value");
     microtypeBuilder.blankLine();
     microtypeBuilder.newLine("@Value");
+    microtypeBuilder.newLine("@EqualsAndHashCode(callSuper = true)");
     microtypeBuilder.defineClassExtends(noClassName, className);
     microtypeBuilder.newLine("private static final %s INSTANCE = new %s();", 1, noClassName, noClassName);
     microtypeBuilder.blankLine();
@@ -72,6 +74,7 @@ public class CreateMicrotypeAction extends AnAction {
     microtypeBuilder.newLine("return INSTANCE;", 2);
     microtypeBuilder.closeCurly(1);
     microtypeBuilder.blankLine();
+    microtypeBuilder.newLine("@Override", 1);
     microtypeBuilder.newLine("public boolean isPresent() {", 1);
     microtypeBuilder.newLine("return false;", 2);
     microtypeBuilder.closeCurly(1);

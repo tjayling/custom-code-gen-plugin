@@ -4,32 +4,28 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.PsiDirectory;
-import io.netty.util.internal.StringUtil;
 import org.tom.customcodegen.builder.ClassBuilder;
-import org.tom.customcodegen.utils.StringUtils;
+import org.tom.customcodegen.utils.InputHandler;
 
 public class CreateMicrotypeAction extends AnAction {
+  private Project project;
+  private PsiDirectory directory;
+
   @Override
   public void actionPerformed(AnActionEvent e) {
-    var project = e.getRequiredData(CommonDataKeys.PROJECT);
-    var selectedDirectory = (PsiDirectory) e.getRequiredData(CommonDataKeys.PSI_ELEMENT);
+    this.project = e.getRequiredData(CommonDataKeys.PROJECT);
+    this.directory = (PsiDirectory) e.getRequiredData(CommonDataKeys.PSI_ELEMENT);
+    InputHandler inputHandler = new InputHandler(project);
 
-    var className = Messages.showInputDialog("Enter the microtype name: ", "Microtype Name", Messages.getQuestionIcon());
-    var classType = Messages.showInputDialog("Enter the type: ", "Microtype Type", Messages.getQuestionIcon());
+    var className = inputHandler.getClassName(directory, "Enter the microtype name: ", "Microtype Name");
+    var classType = inputHandler.getClassType();
 
-    if (StringUtil.isNullOrEmpty(className) || StringUtil.isNullOrEmpty(classType)) {
-      return;
-    }
-
-    className = StringUtils.capitaliseFirstLetter(className);
-
-    createMicrotype(project, selectedDirectory, className, classType);
-    createNoMicrotype(project, selectedDirectory, className, classType);
+    createMicrotype(className, classType);
+    createNoMicrotype(className, classType);
   }
 
-  private void createMicrotype(Project project, PsiDirectory directory, String className, String classType) {
+  private void createMicrotype(String className, String classType) {
     var microtypeBuilder = new ClassBuilder(project);
 
     microtypeBuilder.startOfFile();
@@ -52,8 +48,10 @@ public class CreateMicrotypeAction extends AnAction {
     microtypeBuilder.build(className, directory);
   }
 
-  private void createNoMicrotype(Project project, PsiDirectory directory, String className, String classType) {
+  private void createNoMicrotype(String className, String classType) {
     var microtypeBuilder = new ClassBuilder(project);
+
+    var superValue = getSuperValue(classType);
 
     var noClassName = "No" + className;
 
@@ -67,7 +65,7 @@ public class CreateMicrotypeAction extends AnAction {
     microtypeBuilder.newLine("private static final %s INSTANCE = new %s();", 1, noClassName, noClassName);
     microtypeBuilder.blankLine();
     microtypeBuilder.newLine("public %s() {", 1, noClassName, classType);
-    microtypeBuilder.newLine("super();", 2);
+    microtypeBuilder.newLine("super(%s);", 2, superValue);
     microtypeBuilder.closeCurly(1);
     microtypeBuilder.blankLine();
     microtypeBuilder.newLine("public %s create() {", 1, noClassName);
@@ -83,4 +81,13 @@ public class CreateMicrotypeAction extends AnAction {
     microtypeBuilder.buildAndOpenFile(noClassName, directory, 9, 10);
   }
 
+  private String getSuperValue(String classType) {
+    return switch (classType.toLowerCase()) {
+      case "string" -> "\"\"";
+      case "integer", "int" -> "Integer.MIN_VALUE";
+      case "long" -> "Long.MIN_VALUE";
+      case "double" -> "Double.MIN_VALUE";
+      default -> "/* Enter default value for super */";
+    };
+  }
 }

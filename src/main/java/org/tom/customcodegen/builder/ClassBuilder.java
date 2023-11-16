@@ -11,13 +11,13 @@ import org.tom.customcodegen.utils.SettingUtils;
 
 public class ClassBuilder {
   private final StringBuilder stringBuilder;
-  private final String tab;
   private final Project project;
+  private final String tab;
 
   public ClassBuilder(Project project) {
     this.stringBuilder = new StringBuilder();
-    this.tab = SettingUtils.getDefaultTabCharacter(project);
     this.project = project;
+    this.tab = SettingUtils.getDefaultTabCharacter(project);
   }
 
   public void newLine(String string) {

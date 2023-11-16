@@ -5,33 +5,31 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.PsiDirectory;
-import io.netty.util.internal.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.tom.customcodegen.builder.ClassBuilder;
+import org.tom.customcodegen.utils.InputHandler;
+import org.tom.customcodegen.utils.InternalStringUtils;
 import org.tom.customcodegen.utils.PackageUtils;
-import org.tom.customcodegen.utils.StringUtils;
 
 public class GenerateDomainAction extends AnAction {
+  private Project project;
+  private PsiDirectory directory;
+
   @Override
   public void actionPerformed(AnActionEvent e) {
-    var project = e.getRequiredData(CommonDataKeys.PROJECT);
-    var selectedDirectory = (PsiDirectory) e.getRequiredData(CommonDataKeys.PSI_ELEMENT);
-    var className = Messages.showInputDialog("Enter the domain name: ", "Domain Name", Messages.getQuestionIcon());
+    this.project = e.getRequiredData(CommonDataKeys.PROJECT);
+    this.directory = (PsiDirectory) e.getRequiredData(CommonDataKeys.PSI_ELEMENT);
 
-    if (StringUtil.isNullOrEmpty(className)) {
-      return;
-    }
+    InputHandler inputHandler = new InputHandler(project);
 
-    className = StringUtils.capitaliseFirstLetter(className);
+    var className = inputHandler.getClassName(directory,"Enter the domain name: ", "Domain Name");
 
-    String finalClassName = className;
-    createController(project, selectedDirectory, finalClassName);
-    createService(project, selectedDirectory, finalClassName);
-    createRepositoryInterface(project, selectedDirectory, finalClassName);
-    createRepository(project, selectedDirectory, finalClassName);
-    createDomain(project, selectedDirectory, finalClassName);
+    createController(className);
+    createService(className);
+    createRepositoryInterface(className);
+    createRepository(className);
+    createDomain(className);
   }
 
   @Override
@@ -40,11 +38,11 @@ public class GenerateDomainAction extends AnAction {
     e.getPresentation().setEnabledAndVisible(PackageUtils.isValidPackage(selectedDirectory));
   }
 
-  private void createController(Project project, PsiDirectory directory, String className) {
+  private void createController(String className) {
     var controllerBuilder = new ClassBuilder(project);
 
     var relativePackage = PackageUtils.getRelativePackage(directory);
-    var classNameLower = StringUtils.lowercaseFirstLetter(className);
+    var classNameLower = InternalStringUtils.lowercaseFirstLetter(className);
 
     controllerBuilder.startOfFile();
     controllerBuilder.imports("%s.service.%sService;", relativePackage, className);
@@ -66,8 +64,8 @@ public class GenerateDomainAction extends AnAction {
     controllerBuilder.buildAndOpenFile(className + "Controller", directory, "controller", 10, 10);
   }
 
-  private void createService(Project project, PsiDirectory directory, String className) {
-    var classNameLower = StringUtils.lowercaseFirstLetter(className);
+  private void createService( String className) {
+    var classNameLower = InternalStringUtils.lowercaseFirstLetter(className);
 
     var serviceName = className + "Service";
     var serviceBuilder = new ClassBuilder(project);
@@ -89,7 +87,7 @@ public class GenerateDomainAction extends AnAction {
     serviceBuilder.build(serviceName, directory, "service");
   }
 
-  private void createRepositoryInterface(Project project, PsiDirectory directory, String className) {
+  private void createRepositoryInterface(String className) {
     var repositoryName = className + "Repository";
     var repositoryInterfaceBuilder = new ClassBuilder(project);
 
@@ -101,7 +99,7 @@ public class GenerateDomainAction extends AnAction {
     repositoryInterfaceBuilder.build(repositoryName, directory, "service");
   }
 
-  private void createRepository(Project project, PsiDirectory directory, String className) {
+  private void createRepository( String className) {
     var repositoryBuilder = new ClassBuilder(project);
 
     var relativePackage = PackageUtils.getRelativePackage(directory);
@@ -121,7 +119,7 @@ public class GenerateDomainAction extends AnAction {
 
   }
 
-  private void createDomain(Project project, PsiDirectory directory, String className) {
+  private void createDomain(String className) {
     var domainBuilder = new ClassBuilder(project);
 
     domainBuilder.startOfFile();

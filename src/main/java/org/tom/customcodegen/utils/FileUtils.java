@@ -2,6 +2,8 @@ package org.tom.customcodegen.utils;
 
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
+import com.intellij.openapi.fileTypes.FileType;
+import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.fileTypes.FileTypes;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
@@ -24,5 +26,9 @@ public class FileUtils {
 
   public static void openFile(Project project, PsiFile createdFile) {
     FileEditorManager.getInstance(project).openTextEditor(new OpenFileDescriptor(project, createdFile.getVirtualFile(), 0, 0), true);
+  }
+
+  public static FileType getJavaFileType() {
+    return FileTypeManager.getInstance().getFileTypeByExtension("java");
   }
 }

@@ -1,4 +1,4 @@
-# custom-code-gen-plugin
+# Custom Code Gen IntelliJ plugin
 ### Some useful code generators for basic package structure and micro-types.
 #### Adds two options to the new file menu:
 - Domain: Generates a basic package structure for a project, including a controller, service, repository and domain package structure along with the corresponding classes, all wired together for you.

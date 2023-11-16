@@ -15,7 +15,7 @@
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description>
         <![CDATA[
-            <h3>Some useful code generators for basic package structure and microtypes.</h3>
+            <h3>Some useful code generators for basic package structure and micro-types.</h3>
             <h4>Adds two options to the new file menu:</h4>
             <ul>
             <li>Domain: Generates a basic package structure for a project, including a controller, service, repository and domain package structure along with the corresponding classes, all wired together for you.</li>

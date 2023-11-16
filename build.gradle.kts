@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "org.tom.customcodegen"
-version = "1.4-SNAPSHOT"
+version = "1.4.1"
 
 repositories {
   mavenCentral()

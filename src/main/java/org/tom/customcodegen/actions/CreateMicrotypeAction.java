@@ -36,6 +36,7 @@ public class CreateMicrotypeAction extends AnAction {
     microtypeBuilder.newLine("@NonFinal");
     microtypeBuilder.defineClass(className);
     microtypeBuilder.newLine("%s value;", 1, classType);
+    microtypeBuilder.blankLine();
     microtypeBuilder.newLine("public %s(%s value) {", 1, className, classType);
     microtypeBuilder.newLine("this.value = value;", 2);
     microtypeBuilder.closeCurly(1);
@@ -68,7 +69,7 @@ public class CreateMicrotypeAction extends AnAction {
     microtypeBuilder.newLine("super(%s);", 2, superValue);
     microtypeBuilder.closeCurly(1);
     microtypeBuilder.blankLine();
-    microtypeBuilder.newLine("public %s create() {", 1, noClassName);
+    microtypeBuilder.newLine("public static %s create() {", 1, noClassName);
     microtypeBuilder.newLine("return INSTANCE;", 2);
     microtypeBuilder.closeCurly(1);
     microtypeBuilder.blankLine();

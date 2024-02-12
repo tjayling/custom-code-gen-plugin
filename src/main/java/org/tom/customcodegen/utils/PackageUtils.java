@@ -10,12 +10,12 @@ public class PackageUtils {
 
   public static boolean isValidPackage(PsiElement psiElement) {
     if (psiElement instanceof PsiDirectory psiDirectory) {
-      return getRelativePackage(psiDirectory) != null;
+      return getPackage(psiDirectory) != null;
     }
     return false;
   }
 
-  public static String getRelativePackage(PsiDirectory psiDirectory) {
+  public static String getPackage(PsiDirectory psiDirectory) {
     boolean isInSrcMainJava = psiDirectory.toString().contains("src/main/java/");
     boolean isInValidPackage = false;
     String packageLocation = null;

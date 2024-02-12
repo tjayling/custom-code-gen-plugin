@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "org.tom.customcodegen"
-version = "1.4.2"
+version = "1.5.0"
 
 repositories {
   mavenCentral()
@@ -32,7 +32,7 @@ tasks {
 
   patchPluginXml {
     sinceBuild.set("222")
-    untilBuild.set("232.*")
+    untilBuild.set("233.*")
   }
 
   signPlugin {

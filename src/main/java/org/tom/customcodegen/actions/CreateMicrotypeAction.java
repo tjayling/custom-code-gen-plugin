@@ -7,88 +7,72 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiDirectory;
 import org.tom.customcodegen.builder.ClassBuilder;
 import org.tom.customcodegen.utils.InputHandler;
+import org.tom.customcodegen.utils.PackageUtils;
 
 public class CreateMicrotypeAction extends AnAction {
   private Project project;
   private PsiDirectory directory;
+  String packageName;
 
   @Override
   public void actionPerformed(AnActionEvent e) {
     this.project = e.getRequiredData(CommonDataKeys.PROJECT);
     this.directory = (PsiDirectory) e.getRequiredData(CommonDataKeys.PSI_ELEMENT);
+    this.packageName = PackageUtils.getPackage(directory);
+
     InputHandler inputHandler = new InputHandler(project);
 
     var className = inputHandler.getClassName(directory, "Enter the microtype name: ", "Microtype Name");
     var classType = inputHandler.getClassType();
 
     createMicrotype(className, classType);
-    createNoMicrotype(className, classType);
+  }
+
+  @Override
+  public void update(AnActionEvent e) {
+    var selectedDirectory = e.getData(CommonDataKeys.PSI_ELEMENT);
+    e.getPresentation().setEnabledAndVisible(PackageUtils.isValidPackage(selectedDirectory));
   }
 
   private void createMicrotype(String className, String classType) {
     var microtypeBuilder = new ClassBuilder(project);
 
-    microtypeBuilder.startOfFile();
-    microtypeBuilder.imports("lombok.Value");
-    microtypeBuilder.imports("lombok.experimental.NonFinal");
-    microtypeBuilder.blankLine();
-    microtypeBuilder.newLine("@Value");
-    microtypeBuilder.newLine("@NonFinal");
-    microtypeBuilder.defineClass(className);
-    microtypeBuilder.newLine("%s value;", 1, classType);
-    microtypeBuilder.blankLine();
-    microtypeBuilder.newLine("public %s(%s value) {", 1, className, classType);
-    microtypeBuilder.newLine("this.value = value;", 2);
-    microtypeBuilder.closeCurly(1);
-    microtypeBuilder.blankLine();
-    microtypeBuilder.newLine("public boolean isPresent() {", 1);
-    microtypeBuilder.newLine("return true;", 2);
-    microtypeBuilder.closeCurly(1);
-    microtypeBuilder.closeCurly();
+    populateMicrotype(microtypeBuilder, className, classType);
 
-    microtypeBuilder.build(className, directory);
+    microtypeBuilder.buildAndOpenFile(className, directory);
   }
 
-  private void createNoMicrotype(String className, String classType) {
-    var microtypeBuilder = new ClassBuilder(project);
-
-    var superValue = getSuperValue(classType);
-
+  private void populateMicrotype(ClassBuilder microtypeBuilder, String className, String classType) {
+    var classNameValue = className + "Value";
     var noClassName = "No" + className;
 
     microtypeBuilder.startOfFile();
-    microtypeBuilder.imports("lombok.EqualsAndHashCode");
-    microtypeBuilder.imports("lombok.Value");
+    microtypeBuilder.imports(packageName + '.' + className + '.' + classNameValue);
+    microtypeBuilder.imports(packageName + '.' + className + '.' + noClassName);
     microtypeBuilder.blankLine();
-    microtypeBuilder.newLine("@Value");
-    microtypeBuilder.newLine("@EqualsAndHashCode(callSuper = true)");
-    microtypeBuilder.defineClassExtends(noClassName, className);
-    microtypeBuilder.newLine("private static final %s INSTANCE = new %s();", 1, noClassName, noClassName);
-    microtypeBuilder.blankLine();
-    microtypeBuilder.newLine("public %s() {", 1, noClassName, classType);
-    microtypeBuilder.newLine("super(%s);", 2, superValue);
-    microtypeBuilder.closeCurly(1);
-    microtypeBuilder.blankLine();
-    microtypeBuilder.newLine("public static %s create() {", 1, noClassName);
-    microtypeBuilder.newLine("return INSTANCE;", 2);
-    microtypeBuilder.closeCurly(1);
-    microtypeBuilder.blankLine();
-    microtypeBuilder.newLine("@Override", 1);
-    microtypeBuilder.newLine("public boolean isPresent() {", 1);
-    microtypeBuilder.newLine("return false;", 2);
-    microtypeBuilder.closeCurly(1);
+    microtypeBuilder.defineSealedInterface(className, classNameValue, noClassName);
+    microtypeBuilder.newLine("static %s create(%s value) {", className, classType);
+    microtypeBuilder.incrementIndent();
+    microtypeBuilder.newLine("return value != null ? new %s(value) : new %s();", classNameValue, noClassName);
     microtypeBuilder.closeCurly();
-
-    microtypeBuilder.buildAndOpenFile(noClassName, directory, 9, 10);
-  }
-
-  private String getSuperValue(String classType) {
-    return switch (classType.toLowerCase()) {
-      case "string" -> "\"\"";
-      case "integer", "int" -> "Integer.MIN_VALUE";
-      case "long" -> "Long.MIN_VALUE";
-      case "double" -> "Double.MIN_VALUE";
-      default -> "/* Enter default value for super */";
-    };
+    microtypeBuilder.blankLine();
+    microtypeBuilder.newLine("boolean isPresent();");
+    microtypeBuilder.blankLine();
+    microtypeBuilder.defineRecord(classNameValue, classType, className);
+    microtypeBuilder.newLine("@Override");
+    microtypeBuilder.newLine("public boolean isPresent() {");
+    microtypeBuilder.incrementIndent();
+    microtypeBuilder.newLine("return true;");
+    microtypeBuilder.closeCurly();
+    microtypeBuilder.closeCurly();
+    microtypeBuilder.blankLine();
+    microtypeBuilder.defineRecordNoValue(noClassName, className);
+    microtypeBuilder.newLine("@Override");
+    microtypeBuilder.newLine("public boolean isPresent() {");
+    microtypeBuilder.incrementIndent();
+    microtypeBuilder.newLine("return false;");
+    microtypeBuilder.closeCurly();
+    microtypeBuilder.closeCurly();
+    microtypeBuilder.closeCurly();
   }
 }

@@ -41,7 +41,7 @@ public class GenerateDomainAction extends AnAction {
   private void createController(String className) {
     var controllerBuilder = new ClassBuilder(project);
 
-    var relativePackage = PackageUtils.getRelativePackage(directory);
+    var relativePackage = PackageUtils.getPackage(directory);
     var classNameLower = InternalStringUtils.lowercaseFirstLetter(className);
 
     controllerBuilder.startOfFile();
@@ -54,11 +54,11 @@ public class GenerateDomainAction extends AnAction {
     controllerBuilder.newLine("@RestController");
     controllerBuilder.newLine("@RequestMapping(\"/api/\")");
     controllerBuilder.defineClass(className + "Controller");
-    controllerBuilder.newLine("private final %sService %sService;", 1, className, classNameLower);
+    controllerBuilder.newLine("private final %sService %sService;", className, classNameLower);
     controllerBuilder.blankLine();
-    controllerBuilder.newLine("public %sController(%sService %sService) {", 1, className, className, classNameLower);
-    controllerBuilder.newLine("this.%sService = %sService;", 2, classNameLower, classNameLower);
-    controllerBuilder.closeCurly(1);
+    controllerBuilder.newLine("public %sController(%sService %sService) {", className, className, classNameLower);
+    controllerBuilder.newLine("this.%sService = %sService;", classNameLower, classNameLower);
+    controllerBuilder.closeCurly();
     controllerBuilder.closeCurly();
 
     controllerBuilder.buildAndOpenFile(className + "Controller", directory, "controller", 10, 10);
@@ -77,11 +77,11 @@ public class GenerateDomainAction extends AnAction {
     serviceBuilder.slf4jAnnotation();
     serviceBuilder.newLine("@Service");
     serviceBuilder.defineClass(serviceName);
-    serviceBuilder.newLine("private final %sRepository %sRepository;", 1, className, classNameLower);
+    serviceBuilder.newLine("private final %sRepository %sRepository;", className, classNameLower);
     serviceBuilder.blankLine();
-    serviceBuilder.newLine("public %sService(%sRepository %sRepository) {", 1, className, className, classNameLower);
-    serviceBuilder.newLine("this.%sRepository = %sRepository;", 2, classNameLower, classNameLower);
-    serviceBuilder.closeCurly(1);
+    serviceBuilder.newLine("public %sService(%sRepository %sRepository) {", className, className, classNameLower);
+    serviceBuilder.newLine("this.%sRepository = %sRepository;", classNameLower, classNameLower);
+    serviceBuilder.closeCurly();
     serviceBuilder.closeCurly();
 
     serviceBuilder.build(serviceName, directory, "service");
@@ -102,7 +102,7 @@ public class GenerateDomainAction extends AnAction {
   private void createRepository( String className) {
     var repositoryBuilder = new ClassBuilder(project);
 
-    var relativePackage = PackageUtils.getRelativePackage(directory);
+    var relativePackage = PackageUtils.getPackage(directory);
 
     repositoryBuilder.startOfFile();
     repositoryBuilder.imports("%s.service.%sRepository;", relativePackage, className);
